@@ -1,6 +1,6 @@
 # SignSync: Bridging Communication Gaps
 <p align="center">
-  <img src="./assets/logo.jpeg" alt="SignSync Logo" width="200"/>
+  <img src="./assets/logo.jpeg" alt="SignSync Logo" width="350"/>
 </p>
 
 
