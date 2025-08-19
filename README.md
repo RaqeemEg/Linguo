@@ -1,5 +1,8 @@
 # SignSync: Bridging Communication Gaps
-![SignSync Logo](./assets/logo.jpeg)
+<p align="center">
+  <img src="./assets/logo.jpeg" alt="SignSync Logo" width="200"/>
+</p>
+
 
 ## About The Project
 SignSync is an innovative platform that facilitates seamless communication between individuals who use sign language and those who communicate through speech. It create a more inclusive world by leveraging cutting-edge AI to provide real-time translation, making conversations accessible to everyone, regardless of their primary mode of communication.
