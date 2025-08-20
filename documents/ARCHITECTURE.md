@@ -1,114 +1,124 @@
 # SignSync System Architecture
 
 ## 1. Overview
-![SignSync Architecture Diagram](../assets/architecture.svg)
+![SignSync Architecture Diagram](../assets/architecture1.svg)
 
-SignSync is a communication platform designed to facilitate interaction between deaf and hearing individuals. The system is built on a **microservices architecture** to ensure scalability, maintainability, and independent deployment of its various components.
+SignSync is a communication platform designed to facilitate interaction between deaf and hearing individuals. The system is built on a **monolithic architecture**. This approach was chosen to streamline development, simplify deployment, and reduce operational complexity.
 
-This architecture supports two primary functionalities:
+While the application is a single, unified service, it is designed with a highly **modular internal structure** to ensure the codebase remains clean, maintainable, and scalable. This modularity also allows for a potential future transition to a microservices architecture if needed.
 
-- **Real-Time Meeting Translation**: A live meeting environment where sign language is translated into spoken words, and spoken words are translated into 3D sign language animations.
-- **Document Explanation**: An offline tool that allows users to upload documents and receive explanations for selected text in sign language.
+The platform supports two primary functionalities:
 
-The system is logically divided into three core layers:
-- **Client Layer**: The user interface.
-- **Backend Layer**: Business logic and AI processing.
-- **Data Layer**: Data persistence and retrieval.
+- **Real-Time Meeting Translation**: A live meeting environment where sign language is translated into spoken words, and spoken words are translated into 3D sign language animations.  
+- **Document Explanation**: A tool that allows users to upload documents and receive explanations for selected text in sign language.  
 
 ---
 
 ## 2. Technology Stack
-- **Frontend**: React (dynamic and responsive UI).
-- **3D Rendering**: Three.js (via react-three-fiber) for 3D hand animations in the browser.
-- **Backend**: Python with FastAPI (asynchronous and high performance).
-- **Database**: TiDB (distributed, MySQL-compatible SQL database with integrated vector search).
-- **Real-time Communication**: WebRTC (video/audio streaming) & WebSockets (signaling/data streaming).
-- **Inter-Service Communication**: RabbitMQ (message broker for asynchronous communication).
+- 🎨 **Frontend**: React (for a dynamic and responsive user interface).  
+- 🖐️ **3D Rendering**: Three.js (via react-three-fiber) for rendering 3D hand animations in the browser.  
+- 🐍 **Backend**: Python, using the FastAPI framework for its high performance and asynchronous capabilities.  
+- 🗄️ **Database**: TiDB (a distributed, MySQL-compatible SQL database chosen for its horizontal scalability and integrated vector search capabilities).  
+- 📡 **Real-time Communication**: WebRTC (for peer-to-peer video/audio streaming) and WebSockets (for signaling and data streaming).  
 
 ---
 
-## 3. Backend Layer: Microservices & AI Agents
-The backend is the **core of the platform**, composed of independent services and AI agents.
+## 3. Backend Architecture: The Monolith
+The entire backend is a **single FastAPI application**. All business logic, from user authentication to complex AI processing, is contained within this single codebase and runs as one process. This eliminates network latency between components and simplifies data consistency.
 
-- **Asynchronous communication** between agents via RabbitMQ ensures **low latency and high throughput**.
-- **Synchronous REST APIs** handle direct client interactions requiring immediate responses.
+Communication between different logical parts of the application is handled through **direct Python function and class calls**. For long-running, computationally expensive tasks, such as video processing or AI model inference, we leverage **FastAPI’s `BackgroundTasks`** (or dedicated workers if needed) to ensure the main server thread remains non-blocking and responsive.
 
-### 3.1 Core Services
+---
 
-#### API Gateway
-**Purpose**: Unified entry point for client requests.  
-**Responsibilities**:
-- Request routing
-- Authentication (JWT verification)
-- Load balancing
-- API composition (aggregating multiple responses)
+### 3.1 Modular Structure
 
-#### User & Auth Service
-**Purpose**: User management, security, and identity.  
-**Responsibilities**:
-- Registration & credential verification (password hashing)
-- JWT generation & validation
-- CRUD operations for user profiles
-- Direct interaction with `users` table in TiDB
+The backend codebase is organized into a **layered and modular structure** to maintain a clear separation of concerns:
 
-#### Meeting Service
-**Purpose**: Orchestrates real-time meeting sessions.  
-**Responsibilities**:
-- Create, start, and end meeting rooms
-- Manage participants and roles
-- **WebRTC signaling** via WebSockets:
-  - Exchange SDP offers/answers and ICE candidates
-  - Establish peer-to-peer media connections (service brokers but does not process media streams)
+---
 
-### 3.2 Agentic AI Workflow
-A collection of **specialized AI agents**, each deployed as an independent microservice. They communicate asynchronously using the message broker.
+#### `main.py`
+- **Purpose**: Entry point of the backend.  
+- **Responsibilities**: Initializes the FastAPI app, registers routers, applies middleware (CORS, logging, error handlers), and sets up the database connection.  
 
-#### Sign-Recognition Agent
-**Purpose**: Interpret sign language from video.  
-**Process**:
-1. Receive real-time video stream.
-2. Use computer vision (e.g., MediaPipe) for hand landmark detection.
-3. Feed skeletal data into deep learning model (LSTM/Transformer).
-4. Output recognized sign as text "gloss" (e.g., `HELLO-WAVE`).
-5. Publish result to message queue.
+---
 
-#### Speech-to-Text Agent
-**Purpose**: Transcribe spoken audio into text.  
-**Process**:
-1. Receive audio stream.
-2. Use ASR model (e.g., OpenAI Whisper).
-3. Publish transcribed text to message queue.
+#### `app/api/`
+- **Purpose**: The API layer (HTTP + WebSocket endpoints).  
+- **Responsibilities**:  
+  - Defines feature-specific routers (`auth.py`, `meetings.py`, `documents.py`, etc.).  
+  - Validates requests with Pydantic schemas.  
+  - Delegates logic to service-layer functions.  
+  - Provides WebSocket routes for chat and real-time meeting events.  
 
-#### Translation Agent
-**Purpose**: Convert between sign glosses and spoken text.  
-**Process**:
-1. Subscribe to Sign-Recognition & Speech-to-Text outputs.
-2. Use LLM to:
-   - Convert glosses → spoken language.
-   - Convert spoken text → gloss sequences.
-3. Publish translated glosses to queue.
+---
 
-#### Sign-Animation Agent
-**Purpose**: Render 3D sign animations.  
-**Process**:
-1. Subscribe to Translation Agent output.
-2. Query `sign_poses` table in TiDB for 3D pose data.
-3. Concatenate pose frames into continuous animation sequence.
-4. Stream animation data (JSON) to client via WebSocket.
+#### `app/core/`
+- **Purpose**: Application-wide configuration and utilities.  
+- **Responsibilities**:  
+  - `config.py`: Loads environment variables (DB URLs, secrets, API keys).  
+  - `security.py`: Handles password hashing, JWT authentication.  
+  - `database.py`: Manages database session lifecycle (SQLAlchemy + TiDB).  
+  - `logger.py`: Centralized logging configuration.  
+  - `utils.py`: Generic utility functions.  
 
-#### Text-to-Speech Agent
-**Purpose**: Convert text into speech audio.  
-**Process**:
-1. Subscribe to spoken text from Translation Agent.
-2. Use TTS engine (e.g., Google TTS).
-3. Stream synthesized audio back to client.
+---
 
-#### Document-Explanation Agent
-**Purpose**: RAG pipeline for document analysis.  
-**Process**:
-1. **Ingestion**: Split uploaded document into chunks.
-2. **Vectorization**: Embed chunks with model (e.g., `text-embedding-ada-002`).
-3. **Storage**: Save chunks + embeddings in `document_chunks` table (TiDB).
-4. **Retrieval**: Vector search for relevant chunks based on user query.
-5. **Generation**: LLM produces simple explanation.
-6. Pass explanation to Translation Agent → Sign-Animation pipeline.
+#### `app/models/`
+- **Purpose**: Database schema (ORM).  
+- **Responsibilities**:  
+  - Each file represents a table from the ER diagram (`user.py`, `meeting.py`, `document.py`, etc.).  
+  - Uses SQLAlchemy ORM to define relations, constraints, and indexes.  
+
+---
+
+#### `app/schemas/`
+- **Purpose**: Data validation and serialization.  
+- **Responsibilities**:  
+  - Pydantic models for input validation and response shaping.  
+  - Separate request/response DTOs to ensure consistent API contracts.  
+
+---
+
+#### `app/crud/`
+- **Purpose**: Database access layer (CRUD).  
+- **Responsibilities**:  
+  - Encapsulates raw DB queries and operations.  
+  - Provides clean methods for higher-level services (e.g., `get_user_by_email`, `list_meetings_for_user`).  
+
+---
+
+#### `app/services/`
+- **Purpose**: Business logic layer.  
+- **Responsibilities**: Implements all feature-specific logic.  
+  - `auth_service.py`: Handles authentication & authorization.  
+  - `meeting_service.py`: Manages meeting lifecycle, participants, recording flags.  
+  - `chat_service.py`: Real-time chat handling and persistence.  
+  - `document_service.py`: Document upload, storage, and processing.  
+  - `translation_service.py`: Coordinates sign ↔ speech/text translation.  
+  - `ai_service.py`: Runs ML models for embeddings, gesture recognition, etc.  
+
+---
+
+#### `app/realtime/`
+- **Purpose**: Real-time communication modules.  
+- **Responsibilities**:  
+  - `signaling.py`: WebRTC signaling logic.  
+  - `websocket.py`: WebSocket event handling for chat & meeting updates.  
+  - `rtc_manager.py`: Session and peer connection management.  
+
+---
+
+#### `app/workers/` (optional, for async jobs)
+- **Purpose**: Background/async processing tasks.  
+- **Responsibilities**:  
+  - `transcription.py`: Runs speech-to-text models asynchronously.  
+  - `sign_render.py`: Generates 3D sign animations.  
+  - `embeddings.py`: Handles text embedding and TiDB vector search.  
+
+---
+
+#### `tests/`
+- **Purpose**: Unit and integration testing.  
+- **Responsibilities**:  
+  - Feature-specific test files (`test_auth.py`, `test_meetings.py`, etc.).  
+  - Ensures system reliability and prevents regressions.  
