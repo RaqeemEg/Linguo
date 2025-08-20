@@ -18,8 +18,6 @@ It is built with **FastAPI** in a **monolithic architecture** with a modular int
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-org/signsync-backend.git
-cd signsync-backend
 ### 2. Create & Activate Virtual Environment
 python3 -m venv venv
 source venv/bin/activate   # On macOS/Linux
