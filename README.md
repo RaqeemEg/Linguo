@@ -1,11 +1,11 @@
-# SignSync: Bridging Communication Gaps
+# Linguo: Bridging Communication Gaps
 <p align="center">
-  <img src="./assets/logo.jpeg" alt="SignSync Logo" width="350"/>
+  <img src="./assets/logo.jpeg" alt="Linguo Logo" width="350"/>
 </p>
 
 
 ## About The Project
-SignSync is an innovative platform that facilitates seamless communication between individuals who use sign language and those who communicate through speech. It create a more inclusive world by leveraging cutting-edge AI to provide real-time translation, making conversations accessible to everyone, regardless of their primary mode of communication.
+Linguo is an innovative platform that facilitates seamless communication between individuals who use sign language and those who communicate through speech. It create a more inclusive world by leveraging cutting-edge AI to provide real-time translation, making conversations accessible to everyone, regardless of their primary mode of communication.
 
 The project consists of two main components:
 
