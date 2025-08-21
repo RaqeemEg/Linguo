@@ -35,7 +35,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 ### ▶️ Running the Backend
 
-uvicorn main:app --reload
+uvicorn server:app --reload
 ```
 # File Structure
 ```
