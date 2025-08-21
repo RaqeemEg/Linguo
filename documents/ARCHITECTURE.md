@@ -1,9 +1,9 @@
-# SignSync System Architecture
+# Linguo System Architecture
 
 ## 1. Overview
-![SignSync Architecture Diagram](../assets/architecture1.svg)
+![Linguo Architecture Diagram](../assets/architecture1.svg)
 
-SignSync is a communication platform designed to facilitate interaction between deaf and hearing individuals. The system is built on a **monolithic architecture**. This approach was chosen to streamline development, simplify deployment, and reduce operational complexity.
+Linguo is a communication platform designed to facilitate interaction between deaf and hearing individuals. The system is built on a **monolithic architecture**. This approach was chosen to streamline development, simplify deployment, and reduce operational complexity.
 
 While the application is a single, unified service, it is designed with a highly **modular internal structure** to ensure the codebase remains clean, maintainable, and scalable. This modularity also allows for a potential future transition to a microservices architecture if needed.
 

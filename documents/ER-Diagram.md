@@ -1,9 +1,9 @@
-# SignSync Data Model
+# Linguo Data Model
 
 ## 1. Overview
-![SignSync ER Diagram](../assets/ER-Diagram.png)
+![Linguo ER Diagram](../assets/ER-Diagram.png)
 
-This document provides a detailed explanation of the database schema for the SignSync platform. The data model is designed for a TiDB database, leveraging its distributed SQL capabilities for scalability and its integrated vector search for AI-driven features.
+This document provides a detailed explanation of the database schema for the Linguo platform. The data model is designed for a TiDB database, leveraging its distributed SQL capabilities for scalability and its integrated vector search for AI-driven features.
 
 The schema is organized into three distinct functional areas:
 
