@@ -1,22 +1,33 @@
-import uuid
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, func
+import enum
+from sqlalchemy import (
+    Column, String, DateTime, func, ForeignKey, Boolean, BigInteger, Enum
+)
 from sqlalchemy.orm import relationship
-from app.models.base import Base
+from .base import Base
 
+class ParticipantRole(str, enum.Enum):
+    host = "host"
+    participant = "participant"
+
+class ParticipantStatus(str, enum.Enum):
+    joined = "joined"
+    left = "left"
+    kicked = "kicked"
 
 class Participant(Base):
     __tablename__ = "participants"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    meeting_id = Column(String(36), ForeignKey("meetings.id", ondelete="CASCADE"))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)  # null = guest
-    display_name = Column(String(100), nullable=True)
-    role = Column(String(20), default="guest")       # host, co-host, guest
-    status = Column(String(20), default="joined")    # joined, left, kicked
-    is_muted = Column(Boolean, default=False)
-    is_video_on = Column(Boolean, default=True)
-    joined_at = Column(DateTime(timezone=True), server_default=func.now())
-    left_at = Column(DateTime(timezone=True), nullable=True)
+    id = Column(BigInteger, primary_key=True)
+    meeting_id = Column(BigInteger, ForeignKey("meetings.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    display_name = Column(String(100), nullable=False)
+    role = Column(Enum(ParticipantRole), nullable=False, default=ParticipantRole.participant)
+    status = Column(Enum(ParticipantStatus), nullable=False, default=ParticipantStatus.joined)
+    is_muted = Column(Boolean, nullable=False, default=False)
+    is_video_on = Column(Boolean, nullable=False, default=True)
+    joined_at = Column(DateTime, nullable=False, server_default=func.now())
+    left_at = Column(DateTime, nullable=True)
 
+    # Relationships
     meeting = relationship("Meeting", back_populates="participants")
     user = relationship("User")
