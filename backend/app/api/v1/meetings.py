@@ -2,6 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.schemas.participant import ParticipantCreate, ParticipantResponse
 from app.schemas.meeting import MeetingCreate, MeetingResponse
 from app.dependencies import get_db
 from app.services import meeting_service
@@ -43,3 +44,26 @@ def get_meeting(code: str, db: Session = Depends(get_db)):
         )
         
     return meeting
+
+
+@router.post(
+    "/{code}/join",
+    response_model=ParticipantResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Join a meeting room"
+)
+def join_meeting(code: str, participant_data: ParticipantCreate, db: Session = Depends(get_db)):
+    """
+    Allows a user (as a guest for now) to join an existing meeting room.
+    """
+    participant = meeting_service.add_participant_to_meeting(
+        db=db, code=code, participant_data=participant_data
+    )
+    
+    if not participant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Meeting room with code '{code}' not found or is inactive."
+        )
+        
+    return participant
