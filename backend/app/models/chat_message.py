@@ -1,18 +1,19 @@
-import uuid
-from sqlalchemy import Column, String, DateTime, ForeignKey, func
+from sqlalchemy import (
+    Column, String, DateTime, func, ForeignKey, BigInteger, Text
+)
 from sqlalchemy.orm import relationship
-from app.models.base import Base
-
+from .base import Base
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    meeting_id = Column(String(36), ForeignKey("meetings.id", ondelete="CASCADE"))
-    sender_id = Column(String(36), ForeignKey("users.id"), nullable=True)
-    sender_name = Column(String(100), nullable=True)
-    message = Column(String(500), nullable=False)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(BigInteger, primary_key=True)
+    meeting_id = Column(BigInteger, ForeignKey("meetings.id", ondelete="CASCADE"), nullable=False)
+    sender_id = Column(BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    sender_name = Column(String(100), nullable=False)
+    message = Column(Text, nullable=False)
+    timestamp = Column(DateTime, nullable=False, server_default=func.now())
 
-    meeting = relationship("Meeting", back_populates="messages")
-    sender = relationship("User", back_populates="chat_messages")
+    # Relationships
+    meeting = relationship("Meeting", back_populates="chat_messages")
+    sender = relationship("User")

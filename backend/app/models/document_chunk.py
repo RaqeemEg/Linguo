@@ -1,16 +1,17 @@
-import uuid
-from sqlalchemy import Column, String, ForeignKey, LargeBinary, Integer
+from sqlalchemy import (
+    Column, ForeignKey, BigInteger, Text, INT
+)
 from sqlalchemy.orm import relationship
-from app.models.base import Base
-
+from .base import Base, VECTOR
 
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    document_id = Column(String(36), ForeignKey("documents.id", ondelete="CASCADE"))
-    chunk_index = Column(Integer, nullable=False)
-    content = Column(String, nullable=False)
-    embedding = Column(LargeBinary, nullable=True)  # for vector search
+    id = Column(BigInteger, primary_key=True)
+    document_id = Column(BigInteger, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    chunk_index = Column(INT, nullable=False)
+    content = Column(Text, nullable=False)
+    text_embedding = Column(VECTOR, nullable=True)
 
+    
     document = relationship("Document", back_populates="chunks")

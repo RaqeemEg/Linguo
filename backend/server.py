@@ -1,7 +1,9 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+
 from app.dependencies import get_db
+from app.api.router import api_router
 
 app = FastAPI()
 
@@ -12,3 +14,6 @@ def db_check(db: Session = Depends(get_db)):
         return {"status": "ok", "result": result}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+
+
+app.include_router(api_router, prefix="/api/v1")

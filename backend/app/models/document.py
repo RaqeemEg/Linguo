@@ -1,15 +1,18 @@
-import uuid
-from sqlalchemy import Column, String, DateTime, ForeignKey, func
+from sqlalchemy import (
+    Column, String, DateTime, func, ForeignKey, BigInteger, Text
+)
 from sqlalchemy.orm import relationship
-from app.models.base import Base
-
+from .base import Base
 
 class Document(Base):
     __tablename__ = "documents"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(BigInteger, primary_key=True)
     title = Column(String(255), nullable=False)
-    owner_id = Column(String(36), ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    owner_id = Column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    file_url = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
 
+    # Relationships
+    owner = relationship("User")
     chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan")
