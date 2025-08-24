@@ -1,5 +1,5 @@
 import { AuthGuard } from "@/components/auth/auth-guard"
-import { VideoCallInterface } from "@/components/meet/video-call-interface"
+import  VideoCallInterface  from "@/components/meet/video-call-interface"
 
 interface MeetingRoomPageProps {
   params: {

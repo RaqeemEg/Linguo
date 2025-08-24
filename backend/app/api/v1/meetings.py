@@ -1,7 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
 from app.schemas.participant import ParticipantCreate, ParticipantResponse
 from app.schemas.meeting import MeetingCreate, MeetingResponse
 from app.dependencies import get_db

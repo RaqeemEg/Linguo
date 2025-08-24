@@ -30,10 +30,10 @@ export function useSignLanguageStream(roomId: string) {
   const [currentPose, setCurrentPose] = useState<SignLanguagePose | null>(null)
   const [isTranslating, setIsTranslating] = useState(false)
   const [translationQueue, setTranslationQueue] = useState<string[]>([])
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number>(0)
 
   const { connectionStatus, sendMessage } = useWebSocket({
-    url: `wss://api.linguo.com/translation/${roomId}`, // Updated API URL from SignSync to Linguo
+    url: `wss://api.linguo.com/translation/${roomId}`, // Updated API URL from Linguo
     onMessage: (wsMessage) => {
       switch (wsMessage.type) {
         case "pose_data":
