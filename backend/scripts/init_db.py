@@ -16,7 +16,6 @@ connection = pymysql.connect(
     port=4000,
     user=DATABASE_USER,
     password=DATABASE_PASSWORD,
-    database=DATABASE_database,
     ssl_verify_cert=DATABASE_ssl_verify_cert,
     ssl_verify_identity=DATABASE_ssl_verify_identity,
     ssl_ca=DATABASE_ssl_ca,

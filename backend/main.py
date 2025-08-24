@@ -2,13 +2,14 @@ from fastapi import FastAPI, Depends, WebSocket
 
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.dependencies import get_db
 from app.database import Base, engine
-
-
-Base.metadata.create_all(bind=engine)
+from app.api import router
+from app.dependencies import get_db
 
 app = FastAPI()
+
+# Create all the DB tables
+Base.metadata.create_all(bind=engine)
 
 
 @app.get("/db-check")
@@ -20,7 +21,11 @@ def db_check(db: Session = Depends(get_db)):
         return {"status": "error", "detail": str(e)}
 
 
-# use uvicorn to run the server
+# Mounting The main api into versions
+app.include_router(router.api_router)
+
+
+#  Run the server using ASGI(uvicorn)
 if __name__ == "__main__":
     import uvicorn
 
